@@ -5,18 +5,46 @@ body {
     background-color: #f8f9fa;
     color: #333;
 }
-header {
-    background: #ff5722;
-    color: white;
-    padding: 15px;
-    text-align: center;
+
+.main-section {
+    position: relative;
+    padding: 100px 0;
 }
+
+.main-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    z-index: 0;
+}
+
+.main-section > * {
+    position: relative;
+    z-index: 1;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
 footer {
     background: #333;
     color: white;
     text-align: center;
     padding: 10px;
-    position: fixed;
-    bottom: 0;
+    position: relative; /* Remove fixed if not needed */
     width: 100%;
 }
