@@ -1,21 +1,27 @@
 <?php include 'includes/header.php'; ?>
 
 <!-- Main Section -->
-<section class="main-section text-center py-5" style="background: url('assets/images/background.jpg') no-repeat center center/cover; color: white;">
-    <h1 class="display-4 fw-bold" style="font-family: 'Pacifico', cursive;">Order Delivery & Take-Out</h1>
+<section class="main-section text-center py-5" style="background: url('assets/images/background_new.png') no-repeat center center/cover; background-size: cover; background-attachment: fixed; min-height: 100px;    color: white;">
+    <h1 class="display-4 fw-bold" style="font-family: Georgia, serif;, cursive; color:black">Order Delivery & Take-Out</h1>
     <div class="container">
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-4 text-center">
-                <img src="assets/images/restaurant-icon.png" alt="Choose Restaurant" class="mb-2" height="50">
-                <p>1. Choose Restaurant</p>
+        <div class="row justify-content-center mt-4 align-items-center">
+            <div class="col-md-4 text-center position-relative">
+                <div class="icon-circle">
+                    <!-- <img src="assets/images/restaurant-icon.png" alt="Choose Restaurant" class="mb-2" height="50"> -->
+                </div>
+                <!-- <p class="mt-2">1. Choose Restaurant</p> -->
             </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/images/food-icon.png" alt="Order Food" class="mb-2" height="50">
-                <p>2. Order Food</p>
+            <div class="col-md-4 text-center position-relative">
+                <div class="icon-circle">
+                    <!-- <img src="assets/images/food-icon.png" alt="Order Food" class="mb-2" height="50"> -->
+                </div>
+                <!-- <p class="mt-2">2. Order Food</p> -->
             </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/images/delivery-icon.png" alt="Delivery" class="mb-2" height="50">
-                <p>3. Delivery or Take Out</p>
+            <div class="col-md-4 text-center position-relative">
+                <div class="icon-circle">
+                    <!-- <img src="assets/images/delivery-icon.png" alt="Delivery" class="mb-2" height="50"> -->
+                </div>
+                <!-- <p class="mt-2">3. Delivery or Take Out</p> -->
             </div>
         </div>
     </div>
@@ -24,7 +30,7 @@
 <!-- Popular Dishes Section -->
 <section class="container my-5">
     <h2 class="text-center mb-4">Popular Dishes of the Month</h2>
-    <p class="text-center mb-4">Easiest way to order your favourite food among these Top 3 dishes</p>
+    <!-- <p class="text-center mb-4">Easiest way to order your favourite food among these Top 3 dishes</p> -->
     <div class="row justify-content-center">
         <div class="col-md-4 mb-4">
             <div class="card h-100">
