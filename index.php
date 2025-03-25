@@ -22,9 +22,9 @@ if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) 
 
 // Fetch menu items from database (Modify this part to match your DB structure)
 $menu_items = [
-    ['name' => 'Juicy Burger', 'price' => 8.99, 'discount' => 'Up to 20% off', 'image' => 'assets/images/burger.jpg'],
-    ['name' => 'Cheesy Pizza', 'price' => 12.99, 'discount' => 'Buy 1 Get 1 Free', 'image' => 'assets/images/pizza.jpg'],
-    ['name' => 'Spicy Noodles', 'price' => 7.99, 'discount' => '15% off', 'image' => 'assets/images/noodles.jpg']
+    ['name' => 'Juicy Burger', 'price' => 200, 'discount' => 'Up to 20% off', 'image' => 'assets/images/burger.jpg'],
+    ['name' => 'Cheesy Pizza', 'price' => 300, 'discount' => 'Buy 1 Get 1 Free', 'image' => 'assets/images/pizza.jpg'],
+    ['name' => 'Spicy Noodles', 'price' => 225, 'discount' => '15% off', 'image' => 'assets/images/noodles.jpg']
 ];
 
 // Initialize cart session if not set
@@ -101,10 +101,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
+                
                 <?php if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) { ?>
-                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li> -->
+                     <li class="nav-item"><a class="nav-link" href="Check_out.php">Checkout</a></li>
+                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php } else { ?>
                     <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
                     <li class="nav-item"><a class="nav-link" href="registration.php">Register</a></li>
@@ -135,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
                     <div class="card-body text-center">
                         <h5 class="card-title"><?php echo $item['name']; ?></h5>
                         <p class="card-text"><?php echo $item['discount']; ?></p>
-                        <p class="card-text">Price: $<?php echo number_format($item['price'], 2); ?></p>
+                        <p class="card-text">Price: ₹<?php echo number_format($item['price'], 2); ?></p>
                         <form method="post">
                             <input type="hidden" name="item_name" value="<?php echo $item['name']; ?>">
                             <input type="hidden" name="item_price" value="<?php echo $item['price']; ?>">
@@ -147,33 +148,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         <?php } ?>
     </div>
 
-    <!-- Cart Summary -->
-<?php if (!empty($_SESSION['cart'])) { ?>
-    <h3 class="text-center mt-5">Your Cart</h3>
-    <div class="card shadow-lg">
+<!-- Cart Summary -->
+<?php if (!empty($_SESSION['cart'])) { 
+    $total_price = 0; // Initialize total price
+?>
+    <h3 class="text-center mt-5 fw-bold">🛒 Your Cart</h3>
+    <div class="card shadow-lg p-4">
         <div class="card-body">
-            <ul class="list-group">
-                <?php foreach ($_SESSION['cart'] as $cart_item) { ?>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="fw-bold"><?php echo htmlspecialchars($cart_item['name']); ?></span>
+            <table class="table table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($_SESSION['cart'] as $cart_item) { 
+                        $item_total = $cart_item['price'] * $cart_item['quantity'];
+                        $total_price += $item_total;
+                    ?>
+                        <tr>
+                            <td class="fw-bold"><?php echo htmlspecialchars($cart_item['name']); ?></td>
+                            <td>₹<?php echo number_format($cart_item['price'], 2); ?></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a href="?action=decrease&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-sm btn-outline-secondary">−</a>
+                                    <input type="text" class="form-control text-center mx-2" value="<?php echo $cart_item['quantity']; ?>" readonly style="width: 40px;">
+                                    <a href="?action=increase&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-sm btn-outline-secondary">+</a>
+                                </div>
+                            </td>
+                            <td>₹<?php echo number_format($item_total, 2); ?></td>
+                            <td>
+                                <a href="?action=remove&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-sm btn-outline-danger">🗑 Remove</a>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
 
-                        <!-- Quantity Selector beside Remove button -->
-                        <div class="d-flex align-items-center">
-                            <div class="input-group me-3" style="width: 120px;">
-                                <a href="?action=decrease&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-outline-secondary">−</a>
-                                <input type="text" class="form-control text-center" value="<?php echo $cart_item['quantity']; ?>" readonly>
-                                <a href="?action=increase&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-outline-secondary">+</a>
-                            </div>
+            <!-- Total Price Display -->
+            <div class="text-end mt-3">
+                <h4 class="fw-bold">Total Price: ₹<?php echo number_format($total_price, 2); ?></h4>
+            </div>
 
-                            <!-- Remove Item -->
-                            <a href="?action=remove&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-outline-danger">Remove</a>
-                        </div>
-                    </li>
-                <?php } ?>
-            </ul>
-            <a href="Check_out.php" class="btn btn-primary mt-3 w-100">Proceed to Checkout</a>
+            <a href="Check_out.php" class="btn btn-lg btn-primary w-100 mt-3">Proceed to Checkout</a>
         </div>
     </div>
 <?php } ?>
+
+
+
 
 

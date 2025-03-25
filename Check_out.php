@@ -14,7 +14,7 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
     }
 
     // Redirect to prevent multiple form submissions
-    header("Location: Check_out.php");
+    header("Location: check_out.php");
     exit();
 }
 ?>
@@ -24,7 +24,7 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
+    <title>Checkout - PesUFood</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -39,7 +39,7 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
+                <li class="nav-item"><a class="nav-link" href="check_out.php">Checkout</a></li>
             </ul>
         </div>
     </div>
@@ -47,32 +47,54 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
 
 <!-- Order Summary -->
 <section class="container my-5">
-    <h2 class="text-center">Your Order</h2>
-    <?php if (!empty($_SESSION['cart'])) { ?>
+    <h2 class="text-center fw-bold">🛍 Your Order</h2>
+    <?php if (!empty($_SESSION['cart'])) { 
+        $total_price = 0; // Initialize total price
+    ?>
         <div class="card shadow-lg">
             <div class="card-body">
-                <ul class="list-group">
-                    <?php foreach ($_SESSION['cart'] as $name => $cart_item) { ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span class="fw-bold"><?php echo htmlspecialchars($cart_item['name']); ?></span>
+                <table class="table table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($_SESSION['cart'] as $name => $cart_item) { 
+                            $item_total = $cart_item['price'] * $cart_item['quantity']; 
+                            $total_price += $item_total; 
+                        ?>
+                            <tr>
+                                <td class="fw-bold"><?php echo htmlspecialchars($cart_item['name']); ?></td>
+                                <td>₹<?php echo number_format($cart_item['price'], 2); ?></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a href="?action=decrease&name=<?php echo urlencode($name); ?>" class="btn btn-sm btn-outline-secondary">−</a>
+                                        <input type="text" class="form-control text-center mx-2" value="<?php echo $cart_item['quantity']; ?>" readonly style="width: 40px;">
+                                        <a href="?action=increase&name=<?php echo urlencode($name); ?>" class="btn btn-sm btn-outline-secondary">+</a>
+                                    </div>
+                                </td>
+                                <td>₹<?php echo number_format($item_total, 2); ?></td>
+                                <td>
+                                    <a href="?action=remove&name=<?php echo urlencode($name); ?>" class="btn btn-sm btn-outline-danger">🗑 Remove</a>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
 
-                            <!-- Quantity Selector beside Remove button -->
-                            <div class="d-flex align-items-center">
-                                <div class="input-group me-3" style="width: 120px;">
-                                    <a href="?action=decrease&name=<?php echo urlencode($name); ?>" class="btn btn-outline-secondary">−</a>
-                                    <input type="text" class="form-control text-center" value="<?php echo $cart_item['quantity']; ?>" readonly>
-                                    <a href="?action=increase&name=<?php echo urlencode($name); ?>" class="btn btn-outline-secondary">+</a>
-                                </div>
+                <!-- Total Price Display -->
+                <div class="text-end mt-3">
+                    <h4 class="fw-bold">Total: ₹<?php echo number_format($total_price, 2); ?></h4>
+                </div>
 
-                                <!-- Remove Item -->
-                                <a href="?action=remove&name=<?php echo urlencode($name); ?>" class="btn btn-outline-danger">Remove</a>
-                            </div>
-                        </li>
-                    <?php } ?>
-                </ul>
                 <!-- Proceed to Checkout Button -->
                 <div class="text-center mt-4">
-                    <a href="order_confirm.php" class="btn btn-success btn-lg">Proceed to Checkout</a>
+                    <a href="order_confirm.php" class="btn btn-lg btn-success">✅ Place Order</a>
                 </div>
             </div>
         </div>

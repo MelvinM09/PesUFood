@@ -1,6 +1,14 @@
 <?php
 session_start();
-include_once "connection/connect.php"; // Ensure this path is correct
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Use Composer for PHPMailer
+include_once "connection/connect.php"; // Ensure database connection
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -21,20 +29,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $error = "Email already registered! Please log in.";
     } else {
-        // Hash password before storing
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-        
-        $insert_query = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param("sss", $name, $email, $hashed_password);
-        
-        if ($stmt->execute()) {
-            $_SESSION['user_logged_in'] = true;
-            $_SESSION['user_email'] = $email;
-            header("Location: login.php"); // Redirect to login page
+        // Generate OTP
+        $otp = rand(100000, 999999);
+        $_SESSION['otp_name'] = $name;
+        $_SESSION['otp_email'] = $email;
+        $_SESSION['otp_password'] = password_hash($password, PASSWORD_BCRYPT);
+        $_SESSION['otp_code'] = $otp;
+
+        // Send OTP via Email
+        $mail = new PHPMailer(true);
+        try {
+            // SMTP settings
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'melvinm1391@gmail.com'; // Your Gmail ID
+            $mail->Password = 'your-google-app-password'; // Use App Password from Google
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            // Email content
+            $mail->setFrom('melvinm1391@gmail.com', 'PesUFood Support');
+            $mail->addAddress($email);
+            $mail->Subject = 'PesUFood - OTP Verification';
+            $mail->Body = "Your OTP for registration is: $otp";
+
+            $mail->send();
+            header("Location: verify_otp.php"); // Redirect to OTP verification page
             exit;
-        } else {
-            $error = "Registration failed! Please try again.";
+        } catch (Exception $e) {
+            $error = "Email sending failed: " . $mail->ErrorInfo;
         }
     }
 }
