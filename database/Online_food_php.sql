@@ -14,10 +14,13 @@ CREATE TABLE dishes (
     price DECIMAL(10,2) NOT NULL
 );
 
+DROP TABLE IF EXISTS orders;
+
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     user_email VARCHAR(255) NOT NULL,
-    dish_name VARCHAR(255) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
+    order_items TEXT NOT NULL, -- Stores JSON data (list of dishes & quantity)
+    total_price DECIMAL(10,2) NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_email) REFERENCES users(email)
 );

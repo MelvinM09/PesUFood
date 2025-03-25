@@ -2,23 +2,23 @@
 $servername = "localhost";  // XAMPP default server
 $username = "root";         // Default MySQL username
 $password = "";             // Default MySQL password (empty in XAMPP)
-$database = "online_food_php"; // Use lowercase as seen in phpMyAdmin
+$database = "online_food_php"; // Ensure this matches your database name
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $database);
+// Enable error reporting (useful during development)
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+try {
+    // Create a connection
+    $conn = new mysqli($servername, $username, $password, $database);
+    $conn->set_charset("utf8mb4"); // Set UTF-8 encoding
+} catch (Exception $e) {
+    // Handle connection errors gracefully
+    die("Database Connection Failed: " . $e->getMessage());
 }
 
-// Set UTF-8 character encoding
-$conn->set_charset("utf8mb4");
-
-// Uncomment for debugging
-// echo "Connected successfully";
-if ($conn) {
-    echo "Database connected successfully!";
+// Debugging mode: Show only in development
+$debug_mode = true; // Change to `false` in production
+if ($debug_mode && basename($_SERVER['PHP_SELF']) == "connect.php") {
+    echo "✅ Database connected successfully!";
 }
-
 ?>
