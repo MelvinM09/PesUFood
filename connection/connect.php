@@ -1,8 +1,9 @@
 <?php
-$servername = "localhost";  // XAMPP default server
+$servername = "127.0.0.1";  // XAMPP default server
 $username = "root";         // Default MySQL username
 $password = "";             // Default MySQL password (empty in XAMPP)
 $database = "online_food_php"; // Ensure this matches your database name
+// $port = 3306;
 
 // Enable error reporting (useful during development)
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
