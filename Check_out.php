@@ -1,7 +1,26 @@
 <?php
 session_start();
+include_once "connection/connect.php";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Handle cart actions (increase, decrease, remove)
+// Default dark mode off
+$dark_mode_enabled = false;
+
+// Fetch dark mode preference from DB if user is logged in
+if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
+    $email = $_SESSION['user_email'];
+    $query = "SELECT dark_mode FROM users WHERE email = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($user = $result->fetch_assoc()) {
+        $dark_mode_enabled = $user['dark_mode'] == 1;
+    }
+}
+
+// Handle cart actions
 if (isset($_GET['action']) && isset($_GET['name'])) {
     $item_name = urldecode($_GET['name']);
 
@@ -13,12 +32,10 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
         unset($_SESSION['cart'][$item_name]);
     }
 
-    // Redirect to prevent multiple form submissions
     header("Location: check_out.php");
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,8 +43,25 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - PesUFood</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body.dark-mode {
+            background-color: #121212;
+            color: white;
+        }
+        .dark-mode .navbar {
+            background-color: #222 !important;
+        }
+        .dark-mode .card {
+            background-color: #333;
+            color: white;
+        }
+        .dark-mode .table {
+            background-color: #444;
+            color: white;
+        }
+    </style>
 </head>
-<body>
+<body class="<?php echo $dark_mode_enabled ? 'dark-mode' : ''; ?>">
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -49,7 +83,7 @@ if (isset($_GET['action']) && isset($_GET['name'])) {
 <section class="container my-5">
     <h2 class="text-center fw-bold">🛍 Your Order</h2>
     <?php if (!empty($_SESSION['cart'])) { 
-        $total_price = 0; // Initialize total price
+        $total_price = 0;
     ?>
         <div class="card shadow-lg">
             <div class="card-body">

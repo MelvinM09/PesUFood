@@ -1,22 +1,37 @@
 <?php
-// Site Configuration
-define("SITE_NAME", "PesUFood");
-define("ADMIN_EMAIL", "admin@pesufood.com");
-
-// Admin Password (Hashed)
-define("ADMIN_PASSWORD", '$2y$10$q8pvFAFzw8xORDtWYYKk0e0MkWy8n4ytaXyV0ba0Yq6QdoLMWateK');
-
-// Database Configuration
-$servername = "localhost";    // Default for XAMPP
-$username = "root";           // Default XAMPP username
-$password = "";               // Default XAMPP password
-$dbname = "online_food_php";  // Your database name
-
-// Create connection
-$conn = mysqli_connect($servername, $username, $password, $dbname);
-
-// Check connection
-if (!$conn) {
-    die("⚠️ Database connection failed: " . mysqli_connect_error());
+// Start session only if it's not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+// Database configuration
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "online_food_php";
+
+// Establish database connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Database Connection Failed: " . $conn->connect_error);
+}
+
+// Initialize settings session array
+if (!isset($_SESSION['SETTINGS'])) {
+    $_SESSION['SETTINGS'] = [];
+}
+
+// Fetch settings from database
+$settingsQuery = "SELECT setting_key, setting_value FROM settings";
+$result = $conn->query($settingsQuery);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $_SESSION['SETTINGS'][$row['setting_key']] = $row['setting_value'];
+    }
+} else {
+    error_log("⚠ No settings found in the database!");
+}
+
+// ❌ DO NOT CLOSE `$conn` HERE! Other pages need it for queries.
 ?>

@@ -1,12 +1,20 @@
 <?php
 session_start();
-include_once "connection/connect.php"; // Ensure DB connection
-
-// Enable error reporting for debugging
+include_once "connection/connect.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Fetch user details if logged in
+// Check if maintenance mode is enabled
+$query = "SELECT setting_value FROM settings WHERE setting_key = 'maintenance_mode'";
+$result = mysqli_query($conn, $query);
+$row = mysqli_fetch_assoc($result);
+
+if ($row && $row['setting_value'] === '1') {
+    header("Location: maintenance.php");
+    exit();
+}
+
+
 $user_name = 'Guest';
 if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
     $email = $_SESSION['user_email'];
@@ -20,23 +28,19 @@ if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) 
     }
 }
 
-// Fetch menu items from database (Modify this part to match your DB structure)
 $menu_items = [
     ['name' => 'Juicy Burger', 'price' => 200, 'discount' => 'Up to 20% off', 'image' => 'assets/images/burger.jpg'],
     ['name' => 'Cheesy Pizza', 'price' => 300, 'discount' => 'Buy 1 Get 1 Free', 'image' => 'assets/images/pizza.jpg'],
     ['name' => 'Spicy Noodles', 'price' => 225, 'discount' => '15% off', 'image' => 'assets/images/noodles.jpg']
 ];
 
-// Initialize cart session if not set
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Handle cart actions
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     $item_name = $_GET['name'] ?? '';
-
     foreach ($_SESSION['cart'] as &$cart_item) {
         if ($cart_item['name'] === $item_name) {
             if ($action === 'increase') {
@@ -49,15 +53,12 @@ if (isset($_GET['action'])) {
             break;
         }
     }
-    unset($cart_item); // Unset reference to avoid issues
+    unset($cart_item);
 }
 
-// Handle adding items to cart
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
     $item_name = $_POST['item_name'];
     $item_price = $_POST['item_price'];
-
-    // Check if item already in cart, then increase quantity
     $found = false;
     foreach ($_SESSION['cart'] as &$cart_item) {
         if ($cart_item['name'] === $item_name) {
@@ -67,15 +68,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         }
     }
     unset($cart_item);
-
     if (!$found) {
         $_SESSION['cart'][] = ['name' => $item_name, 'price' => $item_price, 'quantity' => 1];
     }
-
     $success_message = "Item added to cart!";
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,10 +85,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
     <style>
         .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.5rem; }
         .main-section { background: url('assets/images/New.jpg') no-repeat center center/cover; background-size: cover; background-attachment: fixed; min-height: 100px; color: black; }
+        body.dark-mode { background-color: #121212; color: white; }
+        .dark-mode .navbar { background-color: #222 !important; }
+        .dark-mode .card { background-color: #333; color: white; }
+        .dark-mode .table { background-color: #444; color: white; }
     </style>
 </head>
 <body>
-
 <!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -101,15 +102,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                
                 <?php if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) { ?>
-                    <!-- <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li> -->
-                     <li class="nav-item"><a class="nav-link" href="Check_out.php">Checkout</a></li>
-                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Check_out.php">Checkout</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php } else { ?>
                     <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
                     <li class="nav-item"><a class="nav-link" href="registration.php">Register</a></li>
                 <?php } ?>
+                <li class="nav-item">
+                    <button class="btn btn-outline-light ms-3" id="darkModeToggle">🌙 Dark Mode</button>
+                </li>
             </ul>
         </div>
     </div>
@@ -126,7 +128,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
 <!-- Popular Dishes Section -->
 <section class="container my-5">
     <?php if (isset($success_message)) { echo '<div class="alert alert-success text-center">'.$success_message.'</div>'; } ?>
-
     <h2 class="text-center mb-4">Popular Dishes of the Month</h2>
     <div class="row justify-content-center">
         <?php foreach ($menu_items as $item) { ?>
@@ -149,8 +150,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
     </div>
 
 <!-- Cart Summary -->
-<?php if (!empty($_SESSION['cart'])) { 
-    $total_price = 0; // Initialize total price
+<?php if (!empty($_SESSION['cart'])) {
+    $total_price = 0;
 ?>
     <h3 class="text-center mt-5 fw-bold">🛒 Your Cart</h3>
     <div class="card shadow-lg p-4">
@@ -166,7 +167,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($_SESSION['cart'] as $cart_item) { 
+                    <?php foreach ($_SESSION['cart'] as $cart_item) {
                         $item_total = $cart_item['price'] * $cart_item['quantity'];
                         $total_price += $item_total;
                     ?>
@@ -188,18 +189,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
                     <?php } ?>
                 </tbody>
             </table>
-
-            <!-- Total Price Display -->
             <div class="text-end mt-3">
                 <h4 class="fw-bold">Total Price: ₹<?php echo number_format($total_price, 2); ?></h4>
             </div>
-
             <a href="Check_out.php" class="btn btn-lg btn-primary w-100 mt-3">Proceed to Checkout</a>
         </div>
     </div>
 <?php } ?>
 
+<!-- Dark Mode Script -->
+<script>
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const body = document.body;
 
+    // Apply mode on load
+    if (localStorage.getItem("dark-mode") === "enabled") {
+        body.classList.add("dark-mode");
+        darkModeToggle.textContent = "☀ Light Mode";
+    }
 
+    // Toggle button
+    darkModeToggle.addEventListener("click", () => {
+        const isDarkMode = body.classList.toggle("dark-mode");
+        localStorage.setItem("dark-mode", isDarkMode ? "enabled" : "disabled");
+        darkModeToggle.textContent = isDarkMode ? "☀ Light Mode" : "🌙 Dark Mode";
 
-
+        // Save to DB only if user is logged in
+        <?php if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) { ?>
+        fetch('user_dark_mode.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dark_mode: isDarkMode ? 1 : 0 })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'error') {
+                console.error('Failed to save dark mode:', data.message);
+            }
+        })
+        .catch(err => console.error('Error:', err));
+        <?php } ?>
+    });
+</script>
+</body>
+</html>

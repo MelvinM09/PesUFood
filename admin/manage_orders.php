@@ -1,76 +1,53 @@
 <?php
+require_once('../config/config.php'); // Ensure DARK_MODE is available
+$darkModeClass = (DARK_MODE) ? "dark-mode" : "";
+?>
+<body class="<?= $darkModeClass ?>">
+
+<?php
 include '../config/config.php';
 
 // Fetch orders
 $sql = "SELECT * FROM orders ORDER BY order_id DESC";
 $result = mysqli_query($conn, $sql);
+
+// Apply dark mode setting
+$darkModeClass = (DARK_MODE === "1") ? "dark-mode" : "";
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Orders</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 100%;
-            margin: auto;
-        }
-        .table {
-            width: 100%;
-            table-layout: fixed;
-        }
-        .table th, .table td {
-            vertical-align: middle;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .table th {
-            background-color: #212529;
-            color: white;
-        }
-        .btn {
-            width: 100px;
-        }
-        .no-select {
-            user-select: none;
-        }
-        .table td {
-            height: 60px;
-        }
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .date-time {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
-        }
-        .date {
-            font-weight: bold;
-        }
-        .time {
-            font-size: 0.9rem;
-            color: rgb(0, 0, 0);
-            font-weight: bold;
-        }
+        body { background-color: #f8f9fa; }
+        .container { max-width: 100%; margin: auto; }
+        .table { width: 100%; table-layout: fixed; }
+        .table th, .table td { vertical-align: middle; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .table th { background-color: #212529; color: white; }
+        .btn { width: 100px; }
+        .no-select { user-select: none; }
+        .table td { height: 60px; }
+        .action-buttons { display: flex; flex-direction: column; gap: 5px; }
+        .date-time { display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+        .date { font-weight: bold; }
+        .time { font-size: 0.9rem; color: rgb(0, 0, 0); font-weight: bold; }
+
+        /* 🌙 Dark Mode Styles */
+        .dark-mode { background-color: #121212; color: white; }
+        .dark-mode .table th { background-color: #1e1e1e; }
+        .dark-mode .table td { color: white; }
+        .dark-mode .btn { border-color: white; }
+        .dark-mode .date-time .time { color: white; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 <?= $darkModeClass ?>">
     <div class="container">
         <h2 class="mb-4">Manage Orders</h2>
-        <a href="dashboard.php" class="btn btn-primary btn-sm mb-2" 
-   style="white-space: nowrap; width: 150px; text-align: center;">← Back to Dashboard</a>
+        <a href="dashboard.php" class="btn btn-primary btn-sm mb-2" style="white-space: nowrap; width: 150px; text-align: center;">← Back to Dashboard</a>
 
         <table class="table table-bordered table-hover">
             <thead>
@@ -147,20 +124,12 @@ $result = mysqli_query($conn, $sql);
 
     <script>
     function updateStatus(orderId, status) {
-        fetch(`update_status.php?order_id=${orderId}&status=${status}`, {
+        fetch(`admin/update_status.php?order_id=${orderId}&status=${status}`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
-        })
+        .then(response => response.text())
         .then(data => {
-            console.log('Response:', data); // For debugging
             if (data.trim() === "Success") {
                 document.getElementById(`status-${orderId}`).textContent = status;
                 alert(`Order #${orderId} marked as ${status}`);
@@ -170,38 +139,33 @@ $result = mysqli_query($conn, $sql);
         })
         .catch(err => {
             console.error('Fetch Error:', err);
-            alert('An error occurred while updating status: ' + err.message);
+            alert('Error updating status: ' + err.message);
         });
     }
 
-        function deleteOrder(orderId) {
-            if (confirm("Are you sure you want to delete this order?")) {
-                fetch(`delete_order.php?order_id=${orderId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    if (data === "Success") {
-                        alert(`Order #${orderId} has been deleted.`);
-                        location.reload();
-                    } else {
-                        alert('Failed to delete order: ' + data);
-                    }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert('An error occurred while deleting order');
-                });
-            }
+    function deleteOrder(orderId) {
+        if (confirm("Are you sure you want to delete this order?")) {
+            fetch(`admin/delete_order.php?order_id=${orderId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.trim() === "Success") {
+                    alert(`Order #${orderId} deleted.`);
+                    location.reload();
+                } else {
+                    alert('Failed to delete order: ' + data);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error deleting order');
+            });
         }
+    }
     </script>
 </body>
+
+</script>
 </html>

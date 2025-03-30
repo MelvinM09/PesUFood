@@ -9,19 +9,20 @@ if (empty($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include '../config/config.php';
+require_once('../config/config.php');
 
 // Validate input
-if (!isset($_GET['order_id']) || !isset($_GET['status'])) {
-    echo "Invalid request: Missing parameters";
+if (!isset($_GET['order_id'], $_GET['status'])) {
+    echo "Invalid request: Missing parameters.";
     exit();
 }
 
 $order_id = intval($_GET['order_id']);
-$status = strtolower($_GET['status']); // Convert to lowercase for consistency
+$status = strtolower(trim($_GET['status'])); // Trim for safety
 
-// Validate status value
-if ($status !== 'pending' && $status !== 'completed') {
+// Validate allowed statuses
+$allowed_statuses = ['pending', 'completed'];
+if (!in_array($status, $allowed_statuses)) {
     echo "Invalid status value: " . htmlspecialchars($status);
     exit();
 }
@@ -45,7 +46,7 @@ try {
     $stmt->bind_param("si", $status, $order_id);
     
     if ($stmt->execute()) {
-        echo "Success";
+        echo "Order status updated successfully!";
     } else {
         echo "Execute failed: " . $stmt->error;
     }

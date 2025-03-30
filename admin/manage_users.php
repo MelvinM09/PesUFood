@@ -2,11 +2,8 @@
 // Include Config File
 require_once('../config/config.php');
 
-// Create "remarks" column if it doesn't exist
-mysqli_query($conn, "ALTER TABLE orders ADD COLUMN IF NOT EXISTS remarks VARCHAR(20) DEFAULT 'Pending'");
-
-// Fetch Orders
-$sql = "SELECT * FROM orders ORDER BY order_id DESC";
+// Fetch Users
+$sql = "SELECT * FROM users ORDER BY id DESC";
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -15,7 +12,7 @@ $result = mysqli_query($conn, $sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Orders</title>
+    <title>Manage Users</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <style>
         body {
@@ -39,92 +36,156 @@ $result = mysqli_query($conn, $sql);
         .btn-action {
             margin-right: 5px;
         }
-        .no-select {
-            user-select: none;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 class="mb-4">Manage Orders</h2>
+    <h2 class="mb-4">Manage Users</h2>
     <a href="dashboard.php" class="btn btn-primary mb-3">← Back to Dashboard</a>
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">+ Add User</button>
+    
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>Order ID</th>
-                <th>Order Email</th>
-                <th>Date/Time</th>
-                <th>Order Items</th>
-                <th>Price (₹)</th>
-                <th>Quantity</th>
-                <th>Total (₹)</th>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
                 <th>Actions</th>
-                <th>Remarks</th>
             </tr>
         </thead>
         <tbody>
             <?php
             if ($result && mysqli_num_rows($result) > 0) {
-                $orders = [];
                 while ($row = mysqli_fetch_assoc($result)) {
-                    $orders[$row['order_id']][] = $row;
-                }
-
-                foreach ($orders as $order_id => $order_items) {
-                    $rowspan = count($order_items);
-                    $first = true;
-
-                    foreach ($order_items as $item) {
-                        $orderDetails = json_decode($item['order_items'], true);
-                        foreach ($orderDetails as $index => $detail) {
-                            echo "<tr>";
-                            if ($first) {
-                                echo "<td rowspan='$rowspan'>{$order_id}</td>";
-                                echo "<td rowspan='$rowspan' class='no-select'>{$item['order_email']}</td>";
-                                echo "<td rowspan='$rowspan'>{$item['order_date']}</td>";
-                                $first = false;
-                            }
-                            echo "<td>{$detail['name']}</td>";
-                            echo "<td>₹{$detail['price']}</td>";
-                            echo "<td>{$detail['quantity']}</td>";
-                            $total = $detail['price'] * $detail['quantity'];
-                            echo "<td>₹{$total}</td>";
-
-                            if ($index === 0) {
-                                echo "<td rowspan='$rowspan'>
-                                    <button class='btn btn-success btn-action' onclick='updateRemarks($order_id, \"Completed\")'>Complete</button>
-                                    <button class='btn btn-warning btn-action' onclick='updateRemarks($order_id, \"Pending\")'>Pending</button>
-                                </td>";
-                                echo "<td rowspan='$rowspan' id='remarks-$order_id'>{$item['remarks']}</td>";
-                            }
-                            echo "</tr>";
-                        }
-                    }
+                    echo "<tr>";
+                    echo "<td>{$row['id']}</td>";
+                    echo "<td>{$row['name']}</td>";  // Display Name
+                    echo "<td>{$row['email']}</td>";
+                    echo "<td>
+                            <button class='btn btn-warning btn-action' onclick='editUser({$row['id']}, \"{$row['name']}\", \"{$row['email']}\")'>Edit</button>
+                            <button class='btn btn-danger btn-action' onclick='deleteUser({$row['id']})'>Delete</button>
+                          </td>";
+                    echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='9'>No orders found.</td></tr>";
+                echo "<tr><td colspan='4'>No users found.</td></tr>";
             }
             ?>
         </tbody>
     </table>
 </div>
 
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addUserForm">
+          <div class="mb-3">
+            <label for="newName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="newName" required>
+          </div>
+          <div class="mb-3">
+            <label for="newEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="newEmail" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="newPassword" required>
+          </div>
+          <button type="submit" class="btn btn-success">Add User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm">
+          <input type="hidden" id="editUserId">
+          <div class="mb-3">
+            <label for="editName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="editName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editEmail" required>
+          </div>
+          <div class="mb-3">
+            <label for="editPassword" class="form-label">New Password (optional)</label>
+            <input type="password" class="form-control" id="editPassword">
+          </div>
+          <button type="submit" class="btn btn-primary">Update User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-    function updateRemarks(orderId, status) {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "update_remarks.php", true);
-        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                document.getElementById('remarks-' + orderId).textContent = status;
-            } else {
-                alert("Failed to update remarks.");
-            }
-        };
-        xhr.send("order_id=" + orderId + "&remarks=" + status);
+function deleteUser(userId) {
+    if (confirm("Are you sure you want to delete this user?")) {
+        fetch('delete_user.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'id=' + userId
+        }).then(response => response.text())
+          .then(data => { location.reload(); });
     }
+}
+
+function editUser(id, name, email) {
+    document.getElementById('editUserId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editPassword').value = "";
+    var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+    modal.show();
+}
+
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('newName').value;
+    const email = document.getElementById('newEmail').value;
+    const password = document.getElementById('newPassword').value;
+
+    fetch('add_user.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password)
+    }).then(response => response.text())
+      .then(data => { location.reload(); });
+});
+
+document.getElementById('editUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editUserId').value;
+    const name = document.getElementById('editName').value;
+    const email = document.getElementById('editEmail').value;
+    const password = document.getElementById('editPassword').value;
+
+    fetch('update_user.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id + '&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password)
+    }).then(response => response.text())
+      .then(data => { location.reload(); });
+});
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
