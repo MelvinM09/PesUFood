@@ -30,8 +30,6 @@ while ($row = mysqli_fetch_assoc($result)) {
         .container { margin-top: 50px; }
         .card { transition: 0.3s; }
         .card:hover { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
-
-        /* Dark Mode Styles */
         .dark-mode { background-color: #121212; color: white; }
         .dark-mode .card { background-color: #1e1e1e; color: white; }
         .dark-mode .navbar { background-color: #222; }
@@ -51,6 +49,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="manage_orders.php">Manage Orders</a></li>
                 <li class="nav-item"><a class="nav-link" href="manage_users.php">Manage Users</a></li>
+                <li class="nav-item"><a class="nav-link" href="dishes.php">Manage Dishes</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php">Settings</a></li>
             </ul>
             <ul class="navbar-nav ms-auto">
@@ -70,10 +69,10 @@ while ($row = mysqli_fetch_assoc($result)) {
 <!-- Main Content -->
 <div class="container text-center">
     <h1 class="mt-4">Welcome Admin!</h1>
-    <p class="lead">Manage orders, users, and settings efficiently.</p>
+    <p class="lead">Manage orders, users, dishes, and settings efficiently.</p>
 
     <div class="row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
                 <div class="card-body">
                     <h5 class="card-title">Manage Orders</h5>
@@ -82,7 +81,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
                 <div class="card-body">
                     <h5 class="card-title">Manage Users</h5>
@@ -91,7 +90,16 @@ while ($row = mysqli_fetch_assoc($result)) {
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Dishes</h5>
+                    <p class="card-text">Add, edit, or remove dishes.</p>
+                    <a href="dishes.php" class="btn btn-info">Go to Dishes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card p-3">
                 <div class="card-body">
                     <h5 class="card-title">Settings</h5>
@@ -109,7 +117,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             <?= ($_SESSION['SETTINGS']['maintenance_mode'] ?? '0') == '1' ? 'Disable Maintenance' : 'Enable Maintenance' ?>
         </button>
         <small class="d-block mt-2" style="color: rgba(113, 111, 111, 0.7);">Pause frontend for users when maintenance is on.</small>
-        </div>
+    </div>
 </div>
 
 <!-- JavaScript for Toggles -->

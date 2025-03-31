@@ -39,12 +39,18 @@ while ($row = mysqli_fetch_assoc($result)) {
         .form-control, .form-select { margin-bottom: 10px; }
         .btn-primary { width: 100%; }
         .alert { display: none; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 class="mb-4">Website Settings</h2>
+    <div class="header-container">
+        <h2>Website Settings</h2>
+        <a href="dashboard.php" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
     <div class="alert alert-success"></div>
 
     <form id="settings-form">

@@ -9,11 +9,16 @@ $query = "SELECT setting_value FROM settings WHERE setting_key = 'maintenance_mo
 $result = mysqli_query($conn, $query);
 $row = mysqli_fetch_assoc($result);
 
+// Store the current requested page (excluding maintenance.php itself)
+$current_page = basename($_SERVER['PHP_SELF']);
+if ($current_page !== 'maintenance.php') {
+    $_SESSION['return_to'] = $_SERVER['REQUEST_URI'];
+}
+
 if ($row && $row['setting_value'] === '1') {
     header("Location: maintenance.php");
     exit();
 }
-
 
 $user_name = 'Guest';
 if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
@@ -28,11 +33,18 @@ if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) 
     }
 }
 
-$menu_items = [
-    ['name' => 'Juicy Burger', 'price' => 200, 'discount' => 'Up to 20% off', 'image' => 'assets/images/burger.jpg'],
-    ['name' => 'Cheesy Pizza', 'price' => 300, 'discount' => 'Buy 1 Get 1 Free', 'image' => 'assets/images/pizza.jpg'],
-    ['name' => 'Spicy Noodles', 'price' => 225, 'discount' => '15% off', 'image' => 'assets/images/noodles.jpg']
-];
+// Fetch dishes from database
+$query = "SELECT * FROM dishes";
+$result = mysqli_query($conn, $query);
+$menu_items = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $menu_items[] = [
+        'name' => $row['name'],
+        'price' => $row['price'],
+        'discount' => $row['discount'] ?? 'No discount',
+        'image' => $row['image'] ?? 'assets/images/default.jpg'
+    ];
+}
 
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -202,19 +214,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
     const darkModeToggle = document.getElementById("darkModeToggle");
     const body = document.body;
 
-    // Apply mode on load
     if (localStorage.getItem("dark-mode") === "enabled") {
         body.classList.add("dark-mode");
         darkModeToggle.textContent = "☀ Light Mode";
     }
 
-    // Toggle button
     darkModeToggle.addEventListener("click", () => {
         const isDarkMode = body.classList.toggle("dark-mode");
         localStorage.setItem("dark-mode", isDarkMode ? "enabled" : "disabled");
         darkModeToggle.textContent = isDarkMode ? "☀ Light Mode" : "🌙 Dark Mode";
 
-        // Save to DB only if user is logged in
         <?php if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) { ?>
         fetch('user_dark_mode.php', {
             method: 'POST',
@@ -231,5 +240,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         <?php } ?>
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
