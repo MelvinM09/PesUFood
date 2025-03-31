@@ -20,6 +20,15 @@ if ($row && $row['setting_value'] === '1') {
     exit();
 }
 
+// Function to format discount value
+function formatDiscount($discount) {
+    if (!empty($discount) && is_numeric($discount) && $discount > 0) {
+        return number_format($discount, 1) . '% off';
+    }
+    return 'No discount';
+}
+
+// Get user name if logged in
 $user_name = 'Guest';
 if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
     $email = $_SESSION['user_email'];
@@ -38,18 +47,23 @@ $query = "SELECT * FROM dishes";
 $result = mysqli_query($conn, $query);
 $menu_items = [];
 while ($row = mysqli_fetch_assoc($result)) {
+    $discount = $row['discount'] !== NULL ? floatval($row['discount']) : 0;
+    $discounted_price = $row['price'] * (1 - $discount / 100);
     $menu_items[] = [
         'name' => $row['name'],
         'price' => $row['price'],
-        'discount' => $row['discount'] ?? 'No discount',
+        'discounted_price' => $discount > 0 ? $discounted_price : $row['price'],
+        'discount' => formatDiscount($discount),
         'image' => $row['image'] ?? 'assets/images/default.jpg'
     ];
 }
 
+// Initialize cart if not exists
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+// Handle cart actions
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     $item_name = $_GET['name'] ?? '';
@@ -68,10 +82,13 @@ if (isset($_GET['action'])) {
     unset($cart_item);
 }
 
+// Handle adding to cart
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
     $item_name = $_POST['item_name'];
-    $item_price = $_POST['item_price'];
+    $item_price = floatval($_POST['item_price']);
+    $item_discounted_price = floatval($_POST['item_discounted_price']);
     $found = false;
+    
     foreach ($_SESSION['cart'] as &$cart_item) {
         if ($cart_item['name'] === $item_name) {
             $cart_item['quantity']++;
@@ -80,8 +97,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
         }
     }
     unset($cart_item);
+    
     if (!$found) {
-        $_SESSION['cart'][] = ['name' => $item_name, 'price' => $item_price, 'quantity' => 1];
+        $_SESSION['cart'][] = [
+            'name' => $item_name,
+            'price' => $item_price,
+            'discounted_price' => $item_discounted_price,
+            'quantity' => 1
+        ];
     }
     $success_message = "Item added to cart!";
 }
@@ -149,10 +172,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
                     <div class="card-body text-center">
                         <h5 class="card-title"><?php echo $item['name']; ?></h5>
                         <p class="card-text"><?php echo $item['discount']; ?></p>
-                        <p class="card-text">Price: ₹<?php echo number_format($item['price'], 2); ?></p>
+                        <p class="card-text">Price: ₹<?php echo number_format($item['discounted_price'], 2); ?>
+                            <?php if ($item['discount'] !== 'No discount') { ?>
+                                <small class="text-muted">(Original: ₹<?php echo number_format($item['price'], 2); ?>)</small>
+                            <?php } ?>
+                        </p>
                         <form method="post">
                             <input type="hidden" name="item_name" value="<?php echo $item['name']; ?>">
                             <input type="hidden" name="item_price" value="<?php echo $item['price']; ?>">
+                            <input type="hidden" name="item_discounted_price" value="<?php echo $item['discounted_price']; ?>">
                             <button type="submit" name="add_to_cart" class="btn btn-primary">Add to Cart</button>
                         </form>
                     </div>
@@ -180,12 +208,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_to_cart'])) {
                 </thead>
                 <tbody>
                     <?php foreach ($_SESSION['cart'] as $cart_item) {
-                        $item_total = $cart_item['price'] * $cart_item['quantity'];
+                        $item_total = $cart_item['discounted_price'] * $cart_item['quantity'];
                         $total_price += $item_total;
                     ?>
                         <tr>
                             <td class="fw-bold"><?php echo htmlspecialchars($cart_item['name']); ?></td>
-                            <td>₹<?php echo number_format($cart_item['price'], 2); ?></td>
+                            <td>₹<?php echo number_format($cart_item['discounted_price'], 2); ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a href="?action=decrease&name=<?php echo urlencode($cart_item['name']); ?>" class="btn btn-sm btn-outline-secondary">−</a>

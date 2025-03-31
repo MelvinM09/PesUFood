@@ -48,8 +48,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_dish'])) {
     try {
         $name = mysqli_real_escape_string($conn, $_POST['dish_name']);
         $price = floatval($_POST['dish_price']);
-        $discount = mysqli_real_escape_string($conn, $_POST['dish_discount']);
-        
+        $discount = !empty($_POST['dish_discount']) ? floatval($_POST['dish_discount']) : NULL; // Store as float or NULL
+
+        // Validate discount
+        if ($discount !== NULL && ($discount < 0 || $discount > 100)) {
+            throw new Exception("Discount must be between 0 and 100.");
+        }
+
         // Handle image input
         $image = '';
         if (!empty($_FILES['dish_image_upload']['name'])) {
@@ -104,8 +109,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_dish'])) {
         $id = intval($_POST['dish_id']);
         $name = mysqli_real_escape_string($conn, $_POST['dish_name']);
         $price = floatval($_POST['dish_price']);
-        $discount = mysqli_real_escape_string($conn, $_POST['dish_discount']);
-        
+        $discount = !empty($_POST['dish_discount']) ? floatval($_POST['dish_discount']) : NULL;
+
+        // Validate discount
+        if ($discount !== NULL && ($discount < 0 || $discount > 100)) {
+            throw new Exception("Discount must be between 0 and 100.");
+        }
+
         // Get current image
         $current_image_query = "SELECT image FROM dishes WHERE id = ?";
         $stmt = $conn->prepare($current_image_query);
@@ -332,8 +342,8 @@ unset($_SESSION['error_message']);
                         <input type="number" step="0.01" name="dish_price" class="form-control" placeholder="0.00" required>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Discount</label>
-                        <input type="text" name="dish_discount" class="form-control" placeholder="e.g., 10% off">
+                        <label class="form-label">Discount (%) </label>
+                        <input type="number" step="0.1" name="dish_discount" class="form-control" placeholder="e.g., 10 for 10%">
                     </div>
                     <div class="col-md-3">
                         <ul class="nav nav-tabs" id="imageTab" role="tablist">
@@ -388,7 +398,7 @@ unset($_SESSION['error_message']);
                                 <td><?= $row['id'] ?></td>
                                 <td><?= htmlspecialchars($row['name']) ?></td>
                                 <td>₹<?= number_format($row['price'], 2) ?></td>
-                                <td><?= htmlspecialchars($row['discount'] ?? 'None') ?></td>
+                                <td><?= $row['discount'] !== NULL ? number_format($row['discount'], 1) . '%' : 'None' ?></td>
                                 <td>
                                     <?php if (!empty($row['image'])): ?>
                                         <img src="<?= htmlspecialchars($row['image']) ?>" class="img-thumbnail" alt="Dish Image">
@@ -427,8 +437,8 @@ unset($_SESSION['error_message']);
                                                         <input type="number" step="0.01" name="dish_price" class="form-control" value="<?= $row['price'] ?>" required>
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <label class="form-label">Discount</label>
-                                                        <input type="text" name="dish_discount" class="form-control" value="<?= htmlspecialchars($row['discount'] ?? '') ?>">
+                                                        <label class="form-label">Discount (%)</label>
+                                                        <input type="number" step="0.1" name="dish_discount" class="form-control" value="<?= htmlspecialchars($row['discount'] ?? '') ?>" placeholder="e.g., 10 for 10%">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label">Current Image</label>
