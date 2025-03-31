@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 include_once "connection/connect.php";
+require_once "config/config.php"; // Ensure this contains DEFAULT_ADMIN_EMAIL
 
 // Enable error reporting
 error_reporting(E_ALL);
@@ -21,35 +22,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // Generate OTP
-        $otp = rand(100000, 999999);
-        $_SESSION['reset_email'] = $email;
-        $_SESSION['reset_otp'] = $otp;
-
-        // Send OTP via Email
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'melvinm1391@gmail.com';
-            $mail->Password = 'ynuh bpti knkg vhms';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-
-            $mail->setFrom('melvinm1391@gmail.com', 'PesUFood Support');
-            $mail->addAddress($email);
-            $mail->Subject = 'PesUFood - Password Reset OTP';
-            $mail->Body = "Your OTP for password reset is: $otp";
-
-            $mail->send();
-            header("Location: verify_reset_otp.php");
-            exit;
-        } catch (Exception $e) {
-            $error = "Email sending failed: " . $mail->ErrorInfo;
-        }
+        $reset_email = $email; // Use the entered email
     } else {
-        $error = "No account found with this email.";
+        // Use default admin email if no account found
+        $reset_email = DEFAULT_ADMIN_EMAIL;
+    }
+
+    // Generate OTP
+    $otp = rand(100000, 999999);
+    $_SESSION['reset_email'] = $reset_email;
+    $_SESSION['reset_otp'] = $otp;
+
+    // Send OTP via Email
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+
+        // Use secure authentication
+        $mail->Username = getenv('SMTP_USERNAME'); // Set in your server environment
+        $mail->Password = getenv('SMTP_PASSWORD'); // Set in your server environment
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('melvinm1391@gmail.com', 'PesUFood Support');
+        $mail->addAddress($reset_email);
+        $mail->Subject = 'PesUFood - Password Reset OTP';
+        $mail->Body = "Your OTP for password reset is: $otp";
+
+        $mail->send();
+        header("Location: verify_reset_otp.php");
+        exit;
+    } catch (Exception $e) {
+        $error = "Email sending failed: " . $mail->ErrorInfo;
     }
 }
 ?>

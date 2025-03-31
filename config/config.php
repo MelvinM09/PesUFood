@@ -33,5 +33,8 @@ if ($result && $result->num_rows > 0) {
     error_log("⚠ No settings found in the database!");
 }
 
+// Set default admin email
+define("DEFAULT_ADMIN_EMAIL", "melvinm1391@gmail.com");
+
 // ❌ DO NOT CLOSE `$conn` HERE! Other pages need it for queries.
 ?>

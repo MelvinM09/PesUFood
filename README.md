@@ -13,21 +13,21 @@ Ensure you have the following installed on your system:
 - MySQL Database
 - Composer (For dependency management)
 
-### Installation Guide
+## Installation Guide
 
-#### Step 1: Download & Extract the Files
+### Step 1: Download & Extract the Files
 
 1. Download the project ZIP file from GitHub.
 2. Extract the ZIP file into `C:\xampp\htdocs\pesufood` (Make sure the folder name is `pesufood`).
 
-#### Step 2: Configure MySQL Database
+### Step 2: Configure MySQL Database
 
 1. Open **XAMPP Control Panel** and start **Apache** and **MySQL**.
 2. Open `http://localhost/phpmyadmin/` in your browser.
 3. Create a new database named `pesufood_db`.
 4. Import the provided `pesufood_db.sql` file into the database.
 
-#### Step 3: Update Database Configuration
+### Step 3: Update Database Configuration
 
 1. Open the `config.php` file located in the root directory.
 2. Update the database credentials:
@@ -39,13 +39,13 @@ $password = ""; // Leave empty for XAMPP
 $dbname = "pesufood_db";
 ```
 
-#### Step 4: Configure PHP Mailer (If Needed)
+### Step 4: Configure PHP Mailer (If Needed)
 
 1. Install PHPMailer using Composer:
    ```sh
    composer require phpmailer/phpmailer
    ```
-2. Open the `registration.php` ,`forgot_password` file located in the root directory.
+2. Open the `registration.php` and `forgot_password.php` files located in the root directory.
 3. Update the following lines with your email credentials:
 
 ```php
@@ -54,7 +54,15 @@ $mail->Username = 'your-email@gmail.com';
 $mail->Password = 'your-google-app-password';
 ```
 
-#### Step 5: Start the Server
+Alternatively, you can set SMTP credentials via Apache config:
+- Open Apache's `httpd.conf` and add:
+  ```
+  SetEnv SMTP_USERNAME "your-email@gmail.com"
+  SetEnv SMTP_PASSWORD "your-app-password"
+  ```
+- Restart Apache after saving the file.
+
+### Step 5: Start the Server
 
 1. Open XAMPP and start **Apache** and **MySQL**.
 2. Open your browser and navigate to:
@@ -91,8 +99,8 @@ PesUFood/
 ## Troubleshooting
 
 - If the database does not connect, ensure MySQL is running and the credentials in `config.php` are correct.
-- If emails are not sent, enable **Less Secure Apps** for your Gmail or use an **App Password** in `send_email.php`.
-- If pages are not loading, ensure the project is extracted in `C:\xampp\htdocs\pesufood`.
+- If emails are not sent, enable **Less Secure Apps** or use an **App Password** in Gmail.
+- If pages are not loading, ensure the project is in `C:\xampp\htdocs\pesufood`.
 
 ## Contribution
 
@@ -101,4 +109,3 @@ Feel free to fork and contribute to the project!
 ## License
 
 This project is open-source under the MIT License.
-

@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     price DECIMAL(10, 2) NOT NULL,
     description TEXT
 );
+
 DROP TABLE IF EXISTS orders;
 
 CREATE TABLE orders (
