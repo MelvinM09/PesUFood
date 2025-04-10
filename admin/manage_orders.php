@@ -303,7 +303,7 @@ function updateStatus(orderId, status) {
             }
             alert(`Order #${orderId} marked as ${status}`);
         } else {
-            alert('Failed to update status: ' + data);
+            alert(' Status: ' + data);
         }
     })
     .catch(err => {

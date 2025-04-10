@@ -37,29 +37,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['otp_code'] = $otp;
 
         // Send OTP via Email
-        $mail = new PHPMailer(true);
-        try {
-            // SMTP settings
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'melvinm1391@gmail.com'; // Your Gmail ID
-            $mail->Password = 'ynuh bpti knkg vhms'; // Use App Password from Google
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+$mail = new PHPMailer(true);
+try {
+    // Retrieve SMTP credentials from environment variables
+    $smtpUsername = getenv('SMTP_USERNAME'); // Fetch email from environment variable
+    $smtpPassword = getenv('SMTP_PASSWORD'); // Fetch app password from environment variable
 
-            // Email content
-            $mail->setFrom('melvinm1391@gmail.com', 'PesUFood Support');
-            $mail->addAddress($email);
-            $mail->Subject = 'PesUFood - OTP Verification';
-            $mail->Body = "Your OTP for registration is: $otp";
+    if (!$smtpUsername || !$smtpPassword) {
+        throw new Exception("SMTP credentials are not set in environment variables.");
+    }
 
-            $mail->send();
-            header("Location: verify_otp.php"); // Redirect to OTP verification page
-            exit;
-        } catch (Exception $e) {
-            $error = "Email sending failed: " . $mail->ErrorInfo;
-        }
+    // SMTP settings
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = $smtpUsername; // Use environment variable for Gmail ID
+    $mail->Password = $smtpPassword; // Use environment variable for App Password
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
+
+    // Email content
+    $mail->setFrom($smtpUsername, 'PesUFood Support');
+    $mail->addAddress($email); // Recipient email address
+    $mail->Subject = 'PesUFood - OTP Verification';
+    $mail->Body = "Your OTP for registration is: $otp";
+
+    $mail->send();
+    header("Location: verify_otp.php"); // Redirect to OTP verification page
+    exit;
+} catch (Exception $e) {
+    $error = "Email sending failed: " . $mail->ErrorInfo;
+}
     }
 }
 ?>

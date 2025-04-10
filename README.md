@@ -1,104 +1,166 @@
-# PesUFood - Online Food Ordering System
 
-PesUFood is a simple online food ordering system built with PHP and Bootstrap. This project allows users to add items to their cart, update quantities, and proceed to checkout.
+# 🍽️ PesUFood - Online Food Ordering System
 
-## Installation Requirements
+**PesUFood** is a simple and responsive online food ordering platform built with PHP, MySQL, and Bootstrap. Users can browse food items, add them to a cart, update quantities, and place orders with email confirmation support.
 
-### Prerequisites
+## 🚀 Features
 
-Ensure you have the following installed on your system:
+- Add to cart & update quantity  
+- Order confirmation & summary  
+- Email verification & password reset using OTP  
+- User registration/login with dark mode option  
+- Environment testing (`test_db.php`, `test_env.php`)  
+- PHPMailer integration for email services  
+- Bootstrap UI with responsive design
 
-- [XAMPP](https://www.apachefriends.org/download.html) (Includes PHP and MySQL)
-- PHP v7.4 or later
-- MySQL Database
-- Composer (For dependency management)
+## 🧰 Prerequisites
 
-### Installation Guide
+Ensure the following are installed:
 
-#### Step 1: Download & Extract the Files
+- XAMPP (includes Apache, PHP & MySQL)  
+- PHP v7.4 or later  
+- Composer (for dependency management)  
+- A Google account for email (with App Passwords)
 
-1. Download the project ZIP file from GitHub.
-2. Extract the ZIP file into `C:\xampp\htdocs\pesufood` (Make sure the folder name is `pesufood`).
+## ⚙️ Installation Guide
 
-#### Step 2: Configure MySQL Database
+### 1. Clone or Download the Repository
 
-1. Open **XAMPP Control Panel** and start **Apache** and **MySQL**.
-2. Open `http://localhost/phpmyadmin/` in your browser.
-3. Create a new database named `pesufood_db`.
-4. Import the provided `pesufood_db.sql` file into the database.
+Place it inside XAMPP's htdocs folder:  
+`C:/xampp/htdocs/PesUFood`
 
-#### Step 3: Update Database Configuration
+Or download the ZIP and extract to the same location.
 
-1. Open the `config.php` file located in the root directory.
-2. Update the database credentials:
+### 2. Configure the MySQL Database
 
-```php
+1. Open XAMPP and start Apache and MySQL.  
+2. Visit `http://localhost/phpmyadmin`.  
+3. Create a database named `pesufood_db`.  
+4. Import the SQL file: `PesUFood/db/pesufood_db.sql`.
+
+### 3. Configure PHP Files
+
+Open `db.php` and update credentials if needed:
+
+```
 $servername = "localhost";
 $username = "root";
-$password = ""; // Leave empty for XAMPP
+$password = "";
 $dbname = "pesufood_db";
 ```
 
-#### Step 4: Configure PHP Mailer (If Needed)
+### 4. Configure PHPMailer
 
-1. Install PHPMailer using Composer:
-   ```sh
-   composer require phpmailer/phpmailer
-   ```
-2. Open the `registration.php` ,`forgot_password` file located in the root directory.
-3. Update the following lines with your email credentials:
+Install PHPMailer using Composer:  
+`composer require phpmailer/phpmailer`
 
-```php
+Then in files like `registration.php`, `forgot_password.php`, update:
+
+```
 $mail->Host = 'smtp.gmail.com';
 $mail->Username = 'your-email@gmail.com';
 $mail->Password = 'your-google-app-password';
 ```
 
-#### Step 5: Start the Server
+Or load credentials from environment variables (see below).
 
-1. Open XAMPP and start **Apache** and **MySQL**.
-2. Open your browser and navigate to:
-   ```
-   http://localhost/pesufood/
-   ```
-3. The homepage should load with available food items.
+### 5. Run the App
 
-## Features
+Start Apache & MySQL in XAMPP, then go to:  
+`http://localhost/PesUFood/`
 
-- Add/remove items from cart
-- Update item quantity
-- Checkout page with order summary
-- PHP Mailer support for order confirmation
-- Simple Bootstrap UI for responsiveness
+## 🔐 Securely Setting SMTP Credentials in `httpd.conf`
 
-## File Structure
+Instead of hardcoding SMTP credentials in your PHP files, store them as Apache environment variables:
+
+### ✅ Steps to Set Environment Variables:
+
+1. Open `httpd.conf`:  
+   In XAMPP Control Panel → Apache → Config → `httpd.conf`
+
+2. Add the following lines at the end of the file:
 
 ```
-PesUFood/
-│-- config.php
-│-- check_out.php
-│-- index.php
-│-- order_confirm.php
-│-- send_email.php
-│-- assets/
-│   ├── css/
-│   ├── js/
-│   ├── images/
-│-- db/
-│   ├── pesufood_db.sql
+SetEnv SMTP_USERNAME "your-email@gmail.com"
+SetEnv SMTP_PASSWORD "your-google-app-password"
 ```
 
-## Troubleshooting
+3. Restart Apache from XAMPP Control Panel.
 
-- If the database does not connect, ensure MySQL is running and the credentials in `config.php` are correct.
-- If emails are not sent, enable **Less Secure Apps** for your Gmail or use an **App Password** in `send_email.php`.
-- If pages are not loading, ensure the project is extracted in `C:\xampp\htdocs\pesufood`.
+### 💡 How to Access These in PHP
 
-## Contribution
+```php
+$mail->Username = getenv('SMTP_USERNAME');
+$mail->Password = getenv('SMTP_PASSWORD');
+```
 
-Feel free to fork and contribute to the project!
+### ⚠️ Notes
 
-## License
+- Ensure `mod_env` is enabled in Apache (enabled by default in XAMPP).
+- Never commit credentials to version control.
 
-This project is open-source under the MIT License.
+## ✉️ PHP.ini and Sendmail Configuration (Optional)
 
+If you're using `mail()` or fallback methods, configure this:
+
+### 1. Edit `php.ini`
+
+```
+[mail function]
+SMTP=smtp.gmail.com
+smtp_port=587
+sendmail_from = your-email@gmail.com
+sendmail_path = ""C:\xampp\sendmail\sendmail.exe" -t"
+```
+
+### 2. Edit `sendmail.ini`
+
+```
+smtp_server=smtp.gmail.com
+smtp_port=587
+smtp_ssl=auto
+auth_username=your-email@gmail.com
+auth_password=your-google-app-password
+from=your-email@gmail.com
+```
+
+Then restart Apache.
+
+## 🗂️ Project File Structure
+
+PesUFood/  
+├── add_to_cart.php  
+├── Check_out.php  
+├── db.php  
+├── index.php  
+├── login.php  
+├── logout.php  
+├── order.php  
+├── order_confirm.php  
+├── registration.php  
+├── forgot_password.php  
+├── reset_password.php  
+├── verify_otp.php  
+├── verify_reset_otp.php  
+├── update_cart.php  
+├── user_dark_mode.php  
+├── temp.php / maintenance.php  
+├── test_db.php / test_env.php  
+├── db/pesufood_db.sql  
+├── composer.json / composer.lock  
+├── assets/ (if included)  
+├── README.md
+
+## 🛠️ Troubleshooting
+
+- **Database connection issues**: Verify MySQL is running and credentials in `db.php` are correct.  
+- **Email not sending**: Ensure PHPMailer is installed, Google App Password is used, and Apache is restarted.  
+- **Pages not loading**: Confirm folder is under `htdocs` and filenames are correct.
+
+## 🤝 Contribution
+
+Pull requests are welcome! Fork the repo, make changes, and submit a PR.
+
+## 📜 License
+
+MIT License
