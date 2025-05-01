@@ -1,4 +1,3 @@
-
 # 🍽️ PesUFood - Online Food Ordering System
 
 **PesUFood** is a simple and responsive online food ordering platform built with PHP, MySQL, and Bootstrap. Users can browse food items, add them to a cart, update quantities, and place orders with email confirmation support.
@@ -42,7 +41,7 @@ Or download the ZIP and extract to the same location.
 
 Open `db.php` and update credentials if needed:
 
-```
+```php
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -56,7 +55,7 @@ Install PHPMailer using Composer:
 
 Then in files like `registration.php`, `forgot_password.php`, update:
 
-```
+```php
 $mail->Host = 'smtp.gmail.com';
 $mail->Username = 'your-email@gmail.com';
 $mail->Password = 'your-google-app-password';
@@ -64,10 +63,16 @@ $mail->Password = 'your-google-app-password';
 
 Or load credentials from environment variables (see below).
 
-### 5. Run the App
+### 5. Set Up Admin Password
 
-Start Apache & MySQL in XAMPP, then go to:  
-`http://localhost/PesUFood/`
+1. Save your desired admin password in the file `temp.php`.
+2. Go to `http://localhost/PesUFood/temp.php` in your browser to generate the hashed password.
+3. Copy the hashed password and update the `password` field in the `admin` table of the `pesufood_db` database using phpMyAdmin or a similar tool.
+
+### 6. Run the App
+
+1. Start Apache & MySQL in XAMPP.
+2. Go to `http://localhost/PesUFood/index.php` in your browser to start using the application.
 
 ## 🔐 Securely Setting SMTP Credentials in `httpd.conf`
 
@@ -80,7 +85,7 @@ Instead of hardcoding SMTP credentials in your PHP files, store them as Apache e
 
 2. Add the following lines at the end of the file:
 
-```
+```apache
 SetEnv SMTP_USERNAME "your-email@gmail.com"
 SetEnv SMTP_PASSWORD "your-google-app-password"
 ```
@@ -105,7 +110,7 @@ If you're using `mail()` or fallback methods, configure this:
 
 ### 1. Edit `php.ini`
 
-```
+```ini
 [mail function]
 SMTP=smtp.gmail.com
 smtp_port=587
@@ -115,7 +120,7 @@ sendmail_path = ""C:\xampp\sendmail\sendmail.exe" -t"
 
 ### 2. Edit `sendmail.ini`
 
-```
+```ini
 smtp_server=smtp.gmail.com
 smtp_port=587
 smtp_ssl=auto
@@ -124,10 +129,7 @@ auth_password=your-google-app-password
 from=your-email@gmail.com
 ```
 
-Then restart Apache.
-Save your admin password in the file called temp.php then 
-Go to http://localhost/PesUFood/temp.php
-Take that hashed password and put into the sql admin database in the password.(that is the hashed password)
+3. Restart Apache.
 
 ## 🗂️ Project File Structure
 
