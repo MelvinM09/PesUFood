@@ -1,5 +1,51 @@
 <?php
 session_start();
+
+// Database connection variables
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "online_food_php";
+
+// Create a connection to MySQL
+$conn = new mysqli($servername, $username, $password);
+
+// Check the connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the database already exists
+$db_check = $conn->query("SHOW DATABASES LIKE '$dbname'");
+
+// If the database doesn't exist, create it and run the schema
+if ($db_check->num_rows == 0) {
+    // Create the database
+    $conn->query("CREATE DATABASE IF NOT EXISTS $dbname");
+    $conn->select_db($dbname);
+
+    // Get the SQL schema from the file
+    $schema = file_get_contents('database/Online_food_php.sql');
+
+    if ($schema) {
+        if ($conn->multi_query($schema)) {
+            do {
+                $conn->store_result();
+            } while ($conn->more_results() && $conn->next_result());
+            // echo "Database and tables created successfully!";
+        } else {
+            // echo "Error executing schema: " . $conn->error;
+        }
+    } else {
+        // echo "Failed to read the SQL schema file.";
+    }
+} else {
+    // echo "Database already exists.";
+}
+
+// Close the connection
+$conn->close();
+
 include_once "connection/connect.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
