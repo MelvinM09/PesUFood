@@ -125,6 +125,9 @@ from=your-email@gmail.com
 ```
 
 Then restart Apache.
+Save your admin password in the file called temp.php then 
+Go to http://localhost/PesUFood/temp.php
+Take that hashed password and put into the sql admin database in the password.(that is the hashed password)
 
 ## 🗂️ Project File Structure
 
